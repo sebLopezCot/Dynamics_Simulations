@@ -1,4 +1,7 @@
 
+# Credit for this code is given to author at
+# https://jakevdp.github.io/blog/2012/08/18/matplotlib-animation-tutorial/
+
 from numpy import sin, cos
 import numpy as np
 import matplotlib.pyplot as plt
