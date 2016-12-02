@@ -1,4 +1,8 @@
 
+# Author: Sebastian Lopez-Cot
+# 12/2/2016
+# This code simulates a mass-spring system with an optional dampener
+
 from numpy import sin, cos, sqrt, exp
 import numpy as np
 import matplotlib.pyplot as plt
@@ -16,24 +20,30 @@ class MassSpringSystem:
 	def __init__(self,
 				init_conditions = [1.0, 0],
 				M = 1.0, 	# mass
-				K = 1000.0, 	# spring constant
+				K = 100.0, 	# spring constant
 				L0 = 1.0, 	# unstreched length
-				Z = 0.95, # damping ratio (not actual damping ratio, just a play value)
+				C = 5.0, # damping coeff
+				Z = 0.0, # damping ratio
 				G = 9.81,	# accel due to gravity
 				origin=(0,0)):
 		self.init_conditions = init_conditions
-		self.params = (M, K, L0, Z, G)
+		self.params = (M, K, L0, C, Z, G)
 		self.origin = origin
 		self.time_elapsed = 0
 
 	def position(self):
 		""" compute the current y position of the spring mass system """
-		(M, K, L0, Z, G) = self.params
+		(M, K, L0, C, Z, G) = self.params
 
 		fund_freq = sqrt(K/M)
+		Z = C / (2.0 * M * fund_freq) if Z == 0 else Z	# damping ratio
 		t = self.time_elapsed
 		y0, v0 = self.init_conditions
-		y =  y0 * cos(fund_freq * t)  + (v0 / fund_freq) * sin(fund_freq * t)  - L0 - (M*G/K)
+
+		c1 = y0
+		c2 = (v0 + Z * y0) / sqrt(1 - Z**2)
+
+		y =  exp(-Z*t) * (c1 * cos(fund_freq * t)  + c2 * sin(fund_freq * t)) - L0 - (M*G/K)
 
 		return ((0,0),(0,y))
 
@@ -51,7 +61,7 @@ dt = 1./30 # 30 fps
 # set up figure and animation
 fig = plt.figure()
 ax = fig.add_subplot(111, aspect='equal', autoscale_on=False,
-						xlim=(-2,2), ylim=(-2,2))
+						xlim=(-2,2), ylim=(-4,0))
 ax.grid()
 
 line, = ax.plot([],[], 'o-', lw=2)
